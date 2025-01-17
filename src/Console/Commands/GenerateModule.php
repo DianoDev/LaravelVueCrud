@@ -619,7 +619,7 @@ class GenerateModule extends Command
         $repositoryNamespace = "App\\Databases\\Repositories\\" . ucfirst($moduleName) . "Repository";
         $bindingLine = "app()->bind({$moduleNameCaps}Contract::class, {$moduleNameCaps}Repository::class);";
 
-        $providerPath = \App\Console\Commands\app_path('Providers/AppServiceProvider.php');
+        $providerPath = app_path('Providers/AppServiceProvider.php');
 
         if (File::exists($providerPath)) {
             $fileContent = File::get($providerPath);
