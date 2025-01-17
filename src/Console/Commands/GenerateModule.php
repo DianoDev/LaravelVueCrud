@@ -61,20 +61,20 @@ class GenerateModule extends Command
 
         $paths = [
             "app/Databases/Contracts/{$moduleNameCaps}Contract.php" => $this->getContractContent($moduleName),
-            "app/Databases/Models/{$moduleNameCaps}.php" => $this->getModelContent($moduleName),
+            "app/Databases/Models/{$moduleNameCaps}.php" => $this->getModelContent($moduleName,$tableName),
             "app/Databases/Repositories/{$moduleNameCaps}Repository.php" => $this->getRepositoryContent($moduleName, $formColumns),
-            "app/Http/Controllers/$moduleNameCaps/{$moduleNameCaps}Controller.php" => $this->getControllerContent($moduleName, $formColumns),
+            "app/Http/Controllers/$moduleNameCaps/{$moduleNameCaps}Controller.php" => $this->getControllerContent($moduleName, $formColumns,$tableName),
             "app/Http/Requests/{$moduleNameCaps}Request.php" => $this->getRequestContent($moduleName),
-            "resources/views/{$moduleName}/index.blade.php" => $this->getViewContent($moduleName),
-            "resources/js/components/{$moduleName}/{$moduleNameCaps}Grid.vue" => $this->getGridContent($moduleName, $gridColumns),
-            "resources/js/components/{$moduleName}/{$moduleNameCaps}Form.vue" => $this->getFormContent($moduleName, $formColumns),
+            "resources/views/{$tableName}/index.blade.php" => $this->getViewContent($moduleName,$tableName),
+            "resources/js/components/{$tableName}/{$moduleNameCaps}Grid.vue" => $this->getGridContent($moduleName, $gridColumns,$tableName),
+            "resources/js/components/{$tableName}/{$moduleNameCaps}Form.vue" => $this->getFormContent($moduleName, $formColumns,$tableName),
         ];
 
         foreach ($paths as $path => $content) {
             $this->createFile($path, $content);
         }
 
-        $this->addRoute($moduleName);
+        $this->addRoute($moduleName,$tableName);
         $this->addBindings($moduleName);
 
         $this->info("Módulo '{$moduleName}' criado com sucesso!");
@@ -113,10 +113,10 @@ class GenerateModule extends Command
             "}\n";
     }
 
-    private function getModelContent($moduleName)
+    private function getModelContent($moduleName,$tableName)
     {
         $className = ucfirst($moduleName); // Primeira letra maiúscula para o nome da classe
-        $tableName = strtolower($moduleName); // Tudo em minúsculo para o nome da tabela
+        $tableName = strtolower($tableName); // Tudo em minúsculo para o nome da tabela
         $sequenceName = "{$tableName}_id_seq"; // Sequência no formato `nomeTabela_id_seq`
 
         return "<?php\n\n" .
@@ -194,7 +194,7 @@ class GenerateModule extends Command
             "    {\n" .
             "        \$query = {$className}::query();\n\n" .
             $filterConditions . "\n\n" .
-            "        \$query->orderBy(\$pagination['sort'] ?? 'nome', \$pagination['sort_direction'] ?? 'asc');\n" .
+            "        \$query->orderBy(\$pagination['sort'] ?? '$formColumns[0]', \$pagination['sort_direction'] ?? 'asc');\n" .
             "        return \$query->paginate(\$pagination['per_page'] ?? 10, \$columns, 'page', \$pagination['current_page'] ?? 1);\n" .
             "    }\n\n" .
             "    /**\n" .
@@ -264,7 +264,7 @@ class GenerateModule extends Command
     }
 
 
-    function getControllerContent(string $modulo, $formContent): string
+    function getControllerContent(string $modulo, $formContent,$tableName): string
     {
         $className = ucfirst($modulo); // Converte para PascalCase (ex.: pessoa -> Pessoa)
         $variableName = lcfirst($modulo); // Converte para camelCase (ex.: Pessoa -> pessoa)
@@ -295,7 +295,7 @@ class GenerateModule extends Command
             "     */\n" .
             "    public function index(): View\n" .
             "    {\n" .
-            "        return view('{$modulo}.index');\n" .
+            "        return view('{$tableName}.index');\n" .
             "    }\n\n" .
             "    /**\n" .
             "     * Lista registros paginados e filtrados de {$className}\n" .
@@ -390,10 +390,11 @@ class GenerateModule extends Command
             "}\n";
     }
 
-    function getViewContent(string $modulo): string
+    function getViewContent(string $modulo,$tableName): string
     {
+        $output = preg_replace('/([A-Z])/', ' $1', $modulo);
         $className = ucfirst($modulo); // Converte para PascalCase (ex.: pessoa -> Pessoa)
-
+        $componentName = str_replace('_', '-', $tableName);
         return "<x-layout.principal>\n" .
             "    <div class=\"mt-3\">\n\n" .
             "        <div class=\"d-flex justify-content-between align-items-center mb-3\">\n" .
@@ -402,8 +403,8 @@ class GenerateModule extends Command
             "            </h2>\n" .
             "            <div class=\"d-flex\">\n" .
             "                <div class=\"ms-2\">\n" .
-            "                    <popup-button id=\"nova-{$modulo}\" title=\"Nova {$className}\"\n" .
-            "                                  component=\"{$modulo}-form\" action=\"/{$modulo}/\" size=\"xl\">\n" .
+            "                    <popup-button id=\"nova-{$componentName}\" title=\"Nova {$output}\"\n" .
+            "                                  component=\"{$componentName}-form\" action=\"/{$tableName}/\" size=\"xl\">\n" .
             "                        <i class=\"fa fa-plus\"></i>\n" .
             "                        Nova {$className}\n" .
             "                    </popup-button>\n" .
@@ -412,16 +413,18 @@ class GenerateModule extends Command
             "        </div>\n\n" .
             "        <div class=\"card\">\n" .
             "            <div class=\"card-body\">\n" .
-            "                <{$modulo}-grid>\n" .
-            "                </{$modulo}-grid>\n" .
+            "                <{$componentName}-grid>\n" .
+            "                </{$componentName}-grid>\n" .
             "            </div>\n" .
             "        </div>\n" .
             "    </div>\n" .
             "</x-layout.principal>\n";
     }
 
-    private function getGridContent($moduleName, $gridColumns): string
+    private function getGridContent($moduleName, $gridColumns,$tableName): string
     {
+        $componentName = str_replace('_', '-', $tableName);
+        $output = preg_replace('/([A-Z])/', ' $1', $moduleName);
         $gridFields = "";
         foreach ($gridColumns as $column) {
             $gridFields .= "    {name: '{$column}', title: '" . ucfirst($column) . "', width: '20%', sort: '{$column}', nowrap: true},\n";
@@ -430,13 +433,13 @@ class GenerateModule extends Command
         return
             "<template>\n" .
             "    <div>\n" .
-            "        <datatable id=\"" . strtolower($moduleName) . "\" :columns=\"columns\" @delete=\"confirmRemove\" :source=\"source\"></datatable>\n" .
+            "        <datatable id=\"" . strtolower($tableName) . "\" :columns=\"columns\" @delete=\"confirmRemove\" :source=\"source\"></datatable>\n" .
             "    </div>\n" .
             "</template>\n\n" .
             "<script setup>\n" .
             "import {ref, inject} from 'vue';\n\n" .
             "const events = inject('events');\n" .
-            "const source = '/" . strtolower($moduleName) . "/list';\n" .
+            "const source = '/" . strtolower($tableName) . "/list';\n" .
             "const columns = ref([\n" .
             $gridFields .
             "    {\n" .
@@ -447,7 +450,7 @@ class GenerateModule extends Command
             "        contentClass: 'text-center',\n" .
             "        formatter: (value, row) => {\n" .
             "            let output = \"\";\n" .
-            "            output += `<a href=\"javascript:;\" data-json='{\"id\": \"\${value}\"}' data-tooltip=\"Editar\" data-action=\"popup\" data-size=\"xl\" data-component=\"" . strtolower($moduleName) . "-form\" data-title=\"Editar " . ucfirst($moduleName) . "\" class=\" mx-1 action text-align-center tooltip tooltip--top\"><i class=\"fa fa-pencil\"></i></a>`;\n" .
+            "            output += `<a href=\"javascript:;\" data-json='{\"id\": \"\${value}\"}' data-tooltip=\"Editar\" data-action=\"popup\" data-size=\"xl\" data-component=\"" . strtolower($componentName) . "-form\" data-title=\"Editar " . ucfirst($output) . "\" class=\" mx-1 action text-align-center tooltip tooltip--top\"><i class=\"fa fa-pencil\"></i></a>`;\n" .
             "            output += `<a href=\"javascript:;\" data-json='{\"id\": \"\${value}\"}' data-tooltip=\"Remover\" data-action=\"delete\" class=\"action mx-0 action-delete tooltip tooltip--top\"><i class=\"fa fa-trash mx-1\"></i></a>`;\n" .
             "            return output;\n" .
             "        }\n" .
@@ -460,7 +463,7 @@ class GenerateModule extends Command
             "        events.emit('table-reload');\n" .
             "        events.emit('notification', {\n" .
             "            type: 'success',\n" .
-            "            message: '" . ucfirst($moduleName) . " excluído com Sucesso.'\n" .
+            "            message: '" . ucfirst($output) . " excluído com Sucesso.'\n" .
             "        });\n" .
             "    } catch (err) {\n" .
             "        events.emit('notification', {\n" .
@@ -475,7 +478,7 @@ class GenerateModule extends Command
     }
 
 
-    private function getFormContent($moduleName, $formColumns): string
+    private function getFormContent($moduleName, $formColumns,$tableName): string
     {
         $formFields = "";
         foreach ($formColumns as $column) {
@@ -516,11 +519,11 @@ class GenerateModule extends Command
             "        const events = inject('events');\n" .
             "        const info = ref({});\n" .
             "        const ready = ref(false);\n" .
-            "        const acao = ref('/" . strtolower($moduleName) . "/');\n" .
+            "        const acao = ref('/" . strtolower($tableName) . "/');\n" .
             "        const readOnly = ref(false);\n\n" .
             "        const loadData = async () => {\n" .
             "            try {\n" .
-            "                acao.value = '/" . strtolower($moduleName) . "/';\n" .
+            "                acao.value = '/" . strtolower($tableName) . "/';\n" .
             "               const response = await axios.get(acao.value + props.data.id);\n" .
             "                acao.value += props.data.id;\n" .
             "                info.value = response.data;\n" .
@@ -570,17 +573,17 @@ class GenerateModule extends Command
     }
 
 
-    private function addRoute(string $moduleName): void
+    private function addRoute(string $moduleName, string $tableName): void
     {
         $importStatement = "use App\\Http\\Controllers\\" . ucfirst($moduleName) . "\\" . ucfirst($moduleName) . "Controller;";
         $routeContent =
-            "Route::group(['prefix' => '" . strtolower($moduleName) . "'], function () {\n" .
-            "    Route::get('/', [" . ucfirst($moduleName) . "Controller::class, 'index'])->name('" . strtolower($moduleName) . ".index');\n" .
-            "    Route::get('/list', [" . ucfirst($moduleName) . "Controller::class, 'list'])->name('" . strtolower($moduleName) . ".list');\n" .
-            "    Route::get('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'edit'])->name('" . strtolower($moduleName) . ".edit');\n" .
-            "    Route::post('/', [" . ucfirst($moduleName) . "Controller::class, 'create'])->name('" . strtolower($moduleName) . ".create');\n" .
-            "    Route::post('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'update'])->name('" . strtolower($moduleName) . ".update');\n" .
-            "    Route::delete('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'delete'])->name('" . strtolower($moduleName) . ".delete');\n" .
+            "Route::group(['prefix' => '" . strtolower($tableName) . "'], function () {\n" .
+            "    Route::get('/', [" . ucfirst($moduleName) . "Controller::class, 'index'])->name('" . strtolower($tableName) . ".index');\n" .
+            "    Route::get('/list', [" . ucfirst($moduleName) . "Controller::class, 'list'])->name('" . strtolower($tableName) . ".list');\n" .
+            "    Route::get('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'edit'])->name('" . strtolower($tableName) . ".edit');\n" .
+            "    Route::post('/', [" . ucfirst($moduleName) . "Controller::class, 'create'])->name('" . strtolower($tableName) . ".create');\n" .
+            "    Route::post('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'update'])->name('" . strtolower($tableName) . ".update');\n" .
+            "    Route::delete('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'delete'])->name('" . strtolower($tableName) . ".delete');\n" .
             "});";
 
         // Use a função global base_path diretamente
