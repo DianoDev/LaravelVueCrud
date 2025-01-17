@@ -425,6 +425,7 @@ class GenerateModule extends Command
     {
         $componentName = str_replace('_', '-', $tableName);
         $gridFields = "";
+        $output = preg_replace('/([A-Z])/', ' $1', $moduleName);
         foreach ($gridColumns as $column) {
             $title = ucwords(str_replace('_', ' ', preg_replace('/([A-Z])/', ' $1', $column)));
             $gridFields .= "    {name: '{$column}', title: '" . ucfirst($title) . "', width: '20%', sort: '{$column}', nowrap: true},\n";
