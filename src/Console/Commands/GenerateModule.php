@@ -583,7 +583,8 @@ class GenerateModule extends Command
             "    Route::delete('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'delete'])->name('" . strtolower($moduleName) . ".delete');\n" .
             "});";
 
-        $webRoutePath = \App\Console\Commands\base_path('routes/web.php');
+        // Use a função global base_path diretamente
+        $webRoutePath = base_path('routes/web.php');
 
         if (File::exists($webRoutePath)) {
             $fileContent = File::get($webRoutePath);
