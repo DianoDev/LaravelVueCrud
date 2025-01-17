@@ -427,7 +427,8 @@ class GenerateModule extends Command
         $output = preg_replace('/([A-Z])/', ' $1', $moduleName);
         $gridFields = "";
         foreach ($gridColumns as $column) {
-            $gridFields .= "    {name: '{$column}', title: '" . ucfirst($column) . "', width: '20%', sort: '{$column}', nowrap: true},\n";
+            $title = str_replace('_', ' ', $column);
+            $gridFields .= "    {name: '{$column}', title: '" . ucfirst($title) . "', width: '20%', sort: '{$column}', nowrap: true},\n";
         }
 
         return
@@ -484,8 +485,9 @@ class GenerateModule extends Command
         $output = preg_replace('/([A-Z])/', ' $1', $moduleName);
         $formFields = "";
         foreach ($formColumns as $column) {
+            $title = str_replace('_', ' ', $column);
             $formFields .= "<div class=\"col-lg-12 col-md-12 mb-3\">\n" .
-                "    <label for=\"{$column}\" class=\"form-label required\">" . ucfirst($column) . "</label>\n" .
+                "    <label for=\"{$column}\" class=\"form-label required\">" . ucfirst($title) . "</label>\n" .
                 "    <input v-model=\"info.{$column}\" required type=\"text\" name=\"{$column}\" id=\"{$column}\" class=\"form-control\"\n" .
                 "           :disabled=\"readOnly\"/>\n" .
                 "</div>\n";
