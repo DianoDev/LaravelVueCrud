@@ -399,14 +399,14 @@ class GenerateModule extends Command
             "    <div class=\"mt-3\">\n\n" .
             "        <div class=\"d-flex justify-content-between align-items-center mb-3\">\n" .
             "            <h2 class=\"text-primary mb-0\">\n" .
-            "                {$className}s\n" .
+            "                {$output}s\n" .
             "            </h2>\n" .
             "            <div class=\"d-flex\">\n" .
             "                <div class=\"ms-2\">\n" .
-            "                    <popup-button id=\"nova-{$componentName}\" title=\"Nova {$output}\"\n" .
+            "                    <popup-button id=\"nova-{$componentName}\" title=\"Nova{$output}\"\n" .
             "                                  component=\"{$componentName}-form\" action=\"/{$tableName}/\" size=\"xl\">\n" .
             "                        <i class=\"fa fa-plus\"></i>\n" .
-            "                        Nova {$className}\n" .
+            "                        Nova{$output}\n" .
             "                    </popup-button>\n" .
             "                </div>\n" .
             "            </div>\n\n" .
@@ -439,7 +439,7 @@ class GenerateModule extends Command
             "<script setup>\n" .
             "import {ref, inject} from 'vue';\n\n" .
             "const events = inject('events');\n" .
-            "const source = '/" . strtolower($tableName) . "/list';\n" .
+            "const source = '/" . strtolower($componentName) . "/list';\n" .
             "const columns = ref([\n" .
             $gridFields .
             "    {\n" .
@@ -459,7 +459,7 @@ class GenerateModule extends Command
             "const confirmRemove = async (data) => {\n" .
             "    events.emit('loading', true);\n" .
             "    try {\n" .
-            "        await axios.delete('/" . strtolower($moduleName) . "/' + data.id);\n" .
+            "        await axios.delete('/" . strtolower($componentName) . "/' + data.id);\n" .
             "        events.emit('table-reload');\n" .
             "        events.emit('notification', {\n" .
             "            type: 'success',\n" .
@@ -480,6 +480,8 @@ class GenerateModule extends Command
 
     private function getFormContent($moduleName, $formColumns,$tableName): string
     {
+        $componentName = str_replace('_', '-', $tableName);
+        $output = preg_replace('/([A-Z])/', ' $1', $moduleName);
         $formFields = "";
         foreach ($formColumns as $column) {
             $formFields .= "<div class=\"col-lg-12 col-md-12 mb-3\">\n" .
@@ -519,11 +521,11 @@ class GenerateModule extends Command
             "        const events = inject('events');\n" .
             "        const info = ref({});\n" .
             "        const ready = ref(false);\n" .
-            "        const acao = ref('/" . strtolower($tableName) . "/');\n" .
+            "        const acao = ref('/" . strtolower($componentName) . "/');\n" .
             "        const readOnly = ref(false);\n\n" .
             "        const loadData = async () => {\n" .
             "            try {\n" .
-            "                acao.value = '/" . strtolower($tableName) . "/';\n" .
+            "                acao.value = '/" . strtolower($componentName) . "/';\n" .
             "               const response = await axios.get(acao.value + props.data.id);\n" .
             "                acao.value += props.data.id;\n" .
             "                info.value = response.data;\n" .
@@ -531,7 +533,7 @@ class GenerateModule extends Command
             "            } catch (err) {\n" .
             "                emit('notification', {\n" .
             "                    type: 'error',\n" .
-            "                    message: 'Não foi possível recuperar os dados do " . strtolower($moduleName) . ".',\n" .
+            "                    message: 'Não foi possível recuperar os dados do " . ($output) . ".',\n" .
             "                });\n" .
             "            }\n" .
             "            ready.value = true;\n" .
@@ -546,7 +548,7 @@ class GenerateModule extends Command
             "                    events.emit('table-reload', true);\n" .
             "                    events.emit('notification', {\n" .
             "                        type: 'success',\n" .
-            "                        message: '" . ucfirst($moduleName) . " salvo com Sucesso!'\n" .
+            "                        message: '" . ucfirst($output) . " salvo com Sucesso!'\n" .
             "                    });\n" .
             "                    emit('close', true);\n" .
             "                }\n" .
@@ -575,9 +577,10 @@ class GenerateModule extends Command
 
     private function addRoute(string $moduleName, string $tableName): void
     {
+        $componentName = str_replace('_', '-', $tableName);
         $importStatement = "use App\\Http\\Controllers\\" . ucfirst($moduleName) . "\\" . ucfirst($moduleName) . "Controller;";
         $routeContent =
-            "Route::group(['prefix' => '" . strtolower($tableName) . "'], function () {\n" .
+            "Route::group(['prefix' => '" . strtolower($componentName) . "'], function () {\n" .
             "    Route::get('/', [" . ucfirst($moduleName) . "Controller::class, 'index'])->name('" . strtolower($tableName) . ".index');\n" .
             "    Route::get('/list', [" . ucfirst($moduleName) . "Controller::class, 'list'])->name('" . strtolower($tableName) . ".list');\n" .
             "    Route::get('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'edit'])->name('" . strtolower($tableName) . ".edit');\n" .
