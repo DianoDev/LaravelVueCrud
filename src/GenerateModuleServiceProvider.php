@@ -1,6 +1,6 @@
 <?php
 
-namespace SeuNamespace;
+namespace dianodev;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -12,7 +12,7 @@ class GenerateModuleServiceProvider extends ServiceProvider
     public function register()
     {
         $this->commands([
-            \DianoDev\Console\Commands\GenerateModule::class,
+            \dianodev\Console\Commands\GenerateModule::class,
         ]);
     }
 }
