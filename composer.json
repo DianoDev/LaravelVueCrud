@@ -1,0 +1,28 @@
+{
+  "name": "dianodev/laravel-vue-crud",
+  "description": "Uma biblioteca para gerar módulos em Laravel com Componentes Form e Grid em Vue.js.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "DianoDev",
+      "email": "adrianomellocolombo@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "DianoDev\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "DianoDev\\GenerateModuleServiceProvider"
+      ]
+    }
+  },
+  "require": {
+    "php": ">=8.2",
+    "laravel/framework": "^11.0"
+  }
+}
