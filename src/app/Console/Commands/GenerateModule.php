@@ -594,7 +594,7 @@ class GenerateModule extends Command
             "});";
 
         // Use a função global base_path diretamente
-        $webRoutePath = base_path('routes/web.php');
+        $webRoutePath = app()->basePath('routes/web.php');
 
         if (File::exists($webRoutePath)) {
             $fileContent = File::get($webRoutePath);
@@ -629,7 +629,7 @@ class GenerateModule extends Command
         $repositoryNamespace = "App\\Databases\\Repositories\\" . ucfirst($moduleName) . "Repository";
         $bindingLine = "app()->bind({$moduleNameCaps}Contract::class, {$moduleNameCaps}Repository::class);";
 
-        $providerPath = app_path('Providers/AppServiceProvider.php');
+        $providerPath =  app()->basePath('app/Providers/AppServiceProvider.php');
 
         if (File::exists($providerPath)) {
             $fileContent = File::get($providerPath);
