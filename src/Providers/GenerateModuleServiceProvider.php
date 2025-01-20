@@ -15,4 +15,10 @@ class GenerateModuleServiceProvider extends ServiceProvider
             \DianoDev\Console\Commands\GenerateModule::class,
         ]);
     }
+    public function boot()
+    {
+        $this->publishes([
+            __DIR__ . '/../resources/js/components' => resource_path('./vendor/my-package'),
+        ], 'js-components');
+    }
 }
