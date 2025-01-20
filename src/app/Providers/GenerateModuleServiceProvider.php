@@ -35,7 +35,7 @@ class GenerateModuleServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__ . '/../../resources/js/components' => resource_path('js/components/laravel-vue-crud'),
-            __DIR__ . '/../../resources/views/components' => resource_path('views'),
+            __DIR__ . '/../../resources/views/components' => resource_path('views/components'),
             __DIR__ . '/../../app/View' => app_path('View'),
             __DIR__ . '/../../resources/sass' => resource_path('sass'),
         ], 'laravel-vue-crud');
