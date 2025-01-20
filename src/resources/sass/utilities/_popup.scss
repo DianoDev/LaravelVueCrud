@@ -1,0 +1,44 @@
+div[data-bs-backdrop=static] {
+    backdrop-filter: blur(2px) !important;
+}
+
+.modal-content {
+    background-color: #fff !important;
+}
+
+.modal-header {
+    background-color: #2E5FB4 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    padding: 5px 10px 5px 15px !important;
+
+    .modal-title {
+        color: #fff !important;
+    }
+}
+
+.popup-footer {
+    display: block;
+    position: sticky;
+    bottom: -16px;
+    left: 0;
+    background-color: #efefef;
+    height: 49px;
+    padding: 5px 20px;
+}
+
+.modal-xl {
+    > .modal-content {
+        max-width: 1500px !important;
+        > .modal-body {
+            min-height: 500px;
+        }
+    }
+}
+
+.modal-backdrop {
+    background-color: #888 !important;
+}
+
+
+

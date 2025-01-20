@@ -32,7 +32,7 @@
 <script>
 
 import {ref, onMounted} from 'vue';
-import { useTableFilters } from '../../../../stores/table-filters';
+import { useTableFilters } from '../../table-filters';
 import TableCheckbox from "./__table-checkbox.vue";
 import TableFilterText from './filters/__table-filter-text.vue'
 import TableFilterCPF from './filters/__table-filter-cpf.vue'

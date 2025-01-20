@@ -1,0 +1,24 @@
+.table-header {
+    border-bottom: solid 1px #358FDC !important;
+    background-color: #e4e8ed !important;
+}
+
+.table {
+    --bs-table-bg: inherit;
+
+    th, td {
+        padding: 0.75rem 0.75rem !important;
+    }
+
+    thead, tbody, tfoot, tr, td, th {
+        border-color: $table-border-color;
+    }
+
+    > :not(:last-child) > :last-child > * {
+        border-color: $table-border-color;
+    }
+}
+
+.table > tbody > tr > td {
+    vertical-align: middle;
+}

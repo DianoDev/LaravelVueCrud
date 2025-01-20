@@ -1,0 +1,71 @@
+label.required {
+    &::after {
+        content: "*";
+        color: $red;
+    }
+}
+
+.form-error {
+    border: solid 1px $red !important;
+}
+
+.form-control, .form-select, .multiselect__tags, .select2-selection--single {
+    border: solid 1px #aaa;
+}
+
+.multiselect {
+    .multiselect__tags {
+        border: solid 1px #aaa;
+    }
+    .multiselect__content-wrapper {
+        border: solid 1px #aaa !important;
+        z-index: 1099;
+    }
+}
+
+input[readonly], select[readonly] {
+    color: #d0d0d0 !important;
+}
+
+::placeholder {
+    color: #ddd !important;
+    opacity: 1;
+}
+
+:-ms-input-placeholder {
+    color: #ddd !important;;
+}
+
+::-ms-input-placeholder {
+    color: #ddd !important;;
+}
+
+.mx-datepicker {
+    width: inherit !important;
+}
+
+.multiselect, .multiselect__input, .multiselect__single {
+    font-size: 14px !important;
+}
+
+.multiselect {
+    min-height: 30px !important;
+
+    .multiselect__select {
+        height: 30px !important;
+    }
+
+    .multiselect__tags {
+        border-radius: 0 !important;
+        min-height: 30px !important;
+        padding: 5px 40px 0 8px !important;
+
+        .multiselect__placeholder {
+            margin-bottom: 5px;
+        }
+    }
+}
+
+.select2-selection--single {
+    border-radius: 0 !important;
+}
