@@ -22,6 +22,10 @@ class GenerateModuleServiceProvider extends ServiceProvider
         ], 'laravel-vue-crud-components');
 
         $this->publishes([
+            __DIR__ . '/../../resources/sass' => resource_path('sass'),
+        ], 'laravel-sass');
+
+        $this->publishes([
             __DIR__ . '/../../app/View' => app_path('View'),
         ], 'laravel-view');
 
@@ -33,6 +37,7 @@ class GenerateModuleServiceProvider extends ServiceProvider
             __DIR__ . '/../../resources/js/components' => resource_path('js/components/laravel-vue-crud'),
             __DIR__ . '/../../resources/views/components' => resource_path('views'),
             __DIR__ . '/../../app/View' => app_path('View'),
+            __DIR__ . '/../../resources/sass' => resource_path('sass'),
         ], 'laravel-vue-crud');
     }
 }
