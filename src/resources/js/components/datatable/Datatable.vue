@@ -56,7 +56,7 @@ import TableHeader from './partials/__table-header.vue';
 import TableContent from './partials/__table-content.vue';
 import TablePagination from './partials/__table-pagination.vue';
 import TableLoading from './partials/__table-loading.vue';
-import { useTableFilters } from '../../../stores/table-filters';
+import { useTableFilters } from '../table-filters';
 
 export default defineComponent({
     name: "datatable",

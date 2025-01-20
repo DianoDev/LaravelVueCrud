@@ -1,4 +1,4 @@
-<template>SubmitRest
+<template>
     <button :class="`btn btn-${type}`" @click="open">
         <slot></slot>
     </button>

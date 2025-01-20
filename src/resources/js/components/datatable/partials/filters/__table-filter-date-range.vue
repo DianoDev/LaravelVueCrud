@@ -38,7 +38,7 @@
 
 <script setup>
 import DateRangePicker from 'vue3-daterange-picker';
-import { useTableFilters } from '../../../../../stores/table-filters';
+import { useTableFilters } from '../../../table-filters.js';
 import {onMounted, ref} from "vue";
 import moment from "moment/moment";
 
