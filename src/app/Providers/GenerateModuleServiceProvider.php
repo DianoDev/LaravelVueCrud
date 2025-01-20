@@ -30,7 +30,7 @@ class GenerateModuleServiceProvider extends ServiceProvider
         ], 'laravel-view');
 
         $this->publishes([
-            __DIR__ . '/../../resources/views/components' => resource_path('views'),
+            __DIR__ . '/../../resources/views/components' => resource_path('views/components'),
         ], 'laravel-blade');
 
         $this->publishes([
