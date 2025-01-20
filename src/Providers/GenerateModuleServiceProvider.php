@@ -18,7 +18,7 @@ class GenerateModuleServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../resources/js/components' => resource_path('./vendor/my-package'),
+            __DIR__ . '/../resources/js/components' => resource_path('./vendor/diano-dev'),
         ], 'js-components');
     }
 }
