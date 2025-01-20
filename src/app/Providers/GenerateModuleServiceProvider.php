@@ -1,6 +1,6 @@
 <?php
 
-namespace DianoDev\App\Providers;
+namespace DianoDev\app\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
