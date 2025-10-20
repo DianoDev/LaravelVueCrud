@@ -239,7 +239,7 @@ class GenerateModule extends Command
             "    }\n\n" .
             "    public function create({$className}Request \$request): JsonResponse\n" .
             "    {\n" .
-            "        \$params = \$request->validated();\n" .
+            "        \$params = \$request->except('_token');\n" .
             "        \$this->{$variableName}Repository->create(\$params);\n" .
             "        return response()->json(['success' => true, 'message' => '{$className} criado com sucesso!']);\n" .
             "    }\n\n" .
@@ -305,14 +305,14 @@ class GenerateModule extends Command
             "    <LayoutPrincipal>\n" .
             "        <div class=\"page-content\">\n" .
             "            <div class=\"flex items-center justify-between mb-4 w-100\">\n" .
-            "                <h2 class=\"text-2xl font-semibold text-primary\">{$output}s</h2>\n" .
+            "                <h2 class=\"text-2xl font-semibold text-primary\"></h2>\n" .
             "                <div class=\"flex\">\n" .
             "                    <popup-button\n" .
             "                        id=\"novo-{$componentName}\"\n" .
             "                        title=\"Novo {$output}\"\n" .
             "                        size=\"xl\"\n" .
             "                        component=\"{$className}Form\"\n" .
-            "                        variant=\"primary\"\n" .
+            "                        variant=\"secondary\"\n" .
             "                    >\n" .
             "                        <i class=\"mr-2 fa fa-plus\"></i>\n" .
             "                        Novo {$output}\n" .
@@ -414,7 +414,7 @@ class GenerateModule extends Command
             "                <div class=\"flex justify-center space-x-2\" v-if=\"!readOnly\">\n" .
             "                    <button\n" .
             "                        type=\"submit\"\n" .
-            "                        class=\"px-4 py-2 text-white rounded-md bg-primary hover:bg-primary-hover\"\n" .
+            "                        class=\"px-4 py-2 text-white rounded-md bg-blue-500 hover:bg-blue-500-hover\"\n" .
             "                        :disabled=\"processing\"\n" .
             "                    >\n" .
             "                        <i v-if=\"!processing\" class=\"mr-1 fa fa-check\"></i>\n" .
