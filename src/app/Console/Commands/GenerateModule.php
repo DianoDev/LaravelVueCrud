@@ -44,10 +44,10 @@ class GenerateModule extends Command
             "app/Databases/Contracts/{$moduleNameCaps}Contract.php" => $this->getContractContent($moduleName),
             "app/Databases/Models/{$moduleNameCaps}.php" => $this->getModelContent($moduleName, $tableName),
             "app/Databases/Repositories/{$moduleNameCaps}Repository.php" => $this->getRepositoryContent($moduleName, $formColumns),
-            "app/Http/Controllers/{$moduleNameCaps}Controller.php" => $this->getControllerContent($moduleName, $formColumns, $tableName),
+            "app/Http/Controllers/Admin/{$moduleNameCaps}Controller.php" => $this->getControllerContent($moduleName, $formColumns, $tableName),
             "app/Http/Requests/{$moduleNameCaps}Request.php" => $this->getRequestContent($moduleName),
-            "resources/js/Pages/{$moduleNameCaps}/Index.vue" => $this->getIndexPageContent($moduleName, $gridColumns, $tableName),
-            "resources/js/Pages/{$moduleNameCaps}/Form.vue" => $this->getFormContent($moduleName, $formColumns, $tableName),
+            "resources/js/Pages/Admin/{$moduleNameCaps}/{$moduleNameCaps}Index.vue" => $this->getIndexPageContent($moduleName, $gridColumns, $tableName),
+            "resources/js/Pages/Admin/{$moduleNameCaps}/{$moduleNameCaps}Form.vue" => $this->getFormContent($moduleName, $formColumns, $tableName),
         ];
 
         foreach ($paths as $path => $content) {
@@ -212,7 +212,8 @@ class GenerateModule extends Command
         }, $formContent));
 
         return "<?php\n" .
-            "namespace App\\Http\\Controllers;\n\n" .
+            "namespace App\\Http\\Controllers\\Admin;\n\n" .
+            "use App\\Http\\Controllers\\Controller;\n" .
             "use Illuminate\\Http\\Request;\n" .
             "use Illuminate\\Http\\JsonResponse;\n" .
             "use App\\Databases\\Contracts\\{$className}Contract;\n" .
@@ -226,7 +227,7 @@ class GenerateModule extends Command
             "    }\n\n" .
             "    public function index(): Response\n" .
             "    {\n" .
-            "        return Inertia::render('{$className}/Index');\n" .
+            "        return Inertia::render('Admin/{$className}/{$className}Index');\n" .
             "    }\n\n" .
             "    public function list(Request \$request): JsonResponse\n" .
             "    {\n" .
@@ -236,27 +237,27 @@ class GenerateModule extends Command
             "        ];\n" .
             "        return response()->json(\$dados);\n" .
             "    }\n\n" .
-            "    public function create({$className}Request \$request)\n" .
+            "    public function create({$className}Request \$request): JsonResponse\n" .
             "    {\n" .
             "        \$params = \$request->validated();\n" .
             "        \$this->{$variableName}Repository->create(\$params);\n" .
-            "        return redirect()->back()->with('success', '{$className} criado com sucesso!');\n" .
+            "        return response()->json(['success' => true, 'message' => '{$className} criado com sucesso!']);\n" .
             "    }\n\n" .
             "    public function edit(int \$id): JsonResponse\n" .
             "    {\n" .
             "        \$registro = \$this->{$variableName}Repository->getById(\$id);\n" .
             "        return response()->json(\$registro);\n" .
             "    }\n\n" .
-            "    public function update({$className}Request \$request, int \$id)\n" .
+            "    public function update({$className}Request \$request, int \$id): JsonResponse\n" .
             "    {\n" .
             "        \$params = \$request->validated();\n" .
             "        \$this->{$variableName}Repository->update(\$id, \$params);\n" .
-            "        return redirect()->back()->with('success', '{$className} atualizado com sucesso!');\n" .
+            "        return response()->json(['success' => true, 'message' => '{$className} atualizado com sucesso!']);\n" .
             "    }\n\n" .
-            "    public function delete(int \$id)\n" .
+            "    public function delete(int \$id): JsonResponse\n" .
             "    {\n" .
             "        \$this->{$variableName}Repository->destroy(\$id);\n" .
-            "        return redirect()->back()->with('success', '{$className} excluído com sucesso!');\n" .
+            "        return response()->json(['success' => true, 'message' => '{$className} excluído com sucesso!']);\n" .
             "    }\n" .
             "}\n";
     }
@@ -336,7 +337,7 @@ class GenerateModule extends Command
             "import { useToast } from 'vue-toastification';\n\n" .
             "const toast = useToast();\n" .
             "const events = inject('events');\n" .
-            "const source = ref('/{$componentName}/list');\n\n" .
+            "const source = ref('/admin/{$componentName}/list');\n\n" .
             "const columns = ref([\n" .
             $gridFields .
             "    {\n" .
@@ -361,7 +362,7 @@ class GenerateModule extends Command
             "                type: 'delete',\n" .
             "                icon: 'fa-trash',\n" .
             "                text: 'Remover',\n" .
-            "                deleteUrl: `/{$componentName}/\${row.id}`,\n" .
+            "                deleteUrl: `/admin/{$componentName}/\${row.id}`,\n" .
             "                dataTitle: 'Confirmação de Remoção',\n" .
             "                dataMessage: 'Você deseja realmente excluir este registro?'\n" .
             "            }\n" .
@@ -390,7 +391,7 @@ class GenerateModule extends Command
                 "                    v-model=\"form.{$column}\"\n" .
                 "                    :disabled=\"readOnly\"\n" .
                 "                />\n" .
-                "                <InputError :message=\"form.errors.{$column}\"/>\n" .
+                "                <InputError :message=\"errors.{$column}\"/>\n" .
                 "            </div>\n\n";
 
             $formInitialValues .= "    {$column}: '',\n";
@@ -414,11 +415,11 @@ class GenerateModule extends Command
             "                    <button\n" .
             "                        type=\"submit\"\n" .
             "                        class=\"px-4 py-2 text-white rounded-md bg-primary hover:bg-primary-hover\"\n" .
-            "                        :disabled=\"form.processing\"\n" .
+            "                        :disabled=\"processing\"\n" .
             "                    >\n" .
-            "                        <i v-if=\"!form.processing\" class=\"mr-1 fa fa-check\"></i>\n" .
+            "                        <i v-if=\"!processing\" class=\"mr-1 fa fa-check\"></i>\n" .
             "                        <i v-else class=\"mr-1 fa fa-spinner fa-spin\"></i>\n" .
-            "                        {{ form.processing ? 'Salvando...' : 'Salvar' }}\n" .
+            "                        {{ processing ? 'Salvando...' : 'Salvar' }}\n" .
             "                    </button>\n" .
             "                    <button\n" .
             "                        type=\"button\"\n" .
@@ -434,7 +435,6 @@ class GenerateModule extends Command
             "</template>\n\n" .
             "<script setup>\n" .
             "import { inject, onMounted, ref } from 'vue';\n" .
-            "import { useForm } from '@inertiajs/vue3';\n" .
             "import InputLabel from '@/Components/InputLabel.vue';\n" .
             "import InputError from '@/Components/InputError.vue';\n" .
             "import TextInput from '@/Components/TextInput.vue';\n" .
@@ -447,35 +447,58 @@ class GenerateModule extends Command
             "    }\n" .
             "});\n\n" .
             "const emit = defineEmits(['close']);\n" .
+            "const acao = ref('/admin/{$componentName}/');\n" .
             "const events = inject('events');\n" .
             "const toast = useToast();\n" .
+            "const errors = ref({});\n" .
+            "const processing = ref(false);\n" .
             "const ready = ref(false);\n" .
             "const readOnly = ref(false);\n\n" .
-            "const form = useForm({\n" .
+            "const form = ref({\n" .
             $formInitialValues .
             "});\n\n" .
             "function submit() {\n" .
-            "    const url = props.data?.id\n" .
-            "        ? `/{$componentName}/\${props.data.id}`\n" .
-            "        : '/{$componentName}';\n\n" .
-            "    form.post(url, {\n" .
-            "        preserveScroll: true,\n" .
-            "        onSuccess: () => {\n" .
+            "    processing.value = true;\n" .
+            "    axios.post(acao.value, form.value)\n" .
+            "        .then(response => {\n" .
             "            events.emit('table-reload');\n" .
-            "            toast.success(props.data?.id ? '{$output} editado com sucesso!' : '{$output} criado com sucesso!');\n" .
-            "            close();\n" .
-            "        },\n" .
-            "        onError: () => {\n" .
-            "            toast.error('Ocorreu um erro ao salvar o {$output}.');\n" .
-            "        }\n" .
-            "    });\n" .
+            "            handleSuccess();\n" .
+            "            processing.value = false;\n" .
+            "        })\n" .
+            "        .catch(error => {\n" .
+            "            processing.value = false;\n\n" .
+            "            if (error.response) {\n" .
+            "                const data = error.response.data;\n\n" .
+            "                if (data.errors) {\n" .
+            "                    errors.value = data.errors;\n" .
+            "                }\n" .
+            "                const message = data.message || \"Ocorreu um erro ao salvar {$output}.\";\n" .
+            "                handleError(message);\n" .
+            "            } else {\n" .
+            "                handleError(\"Erro de conexão com o servidor.\");\n" .
+            "            }\n" .
+            "        })\n" .
+            "        .finally(() => {\n" .
+            "            processing.value = false;\n" .
+            "        });\n" .
+            "}\n\n" .
+            "function handleSuccess() {\n" .
+            "    if(props.data?.id) {\n" .
+            "        toast.success(\"{$output} editado com sucesso!\");\n" .
+            "    } else {\n" .
+            "        toast.success(\"{$output} criado com sucesso!\");\n" .
+            "    }\n" .
+            "    close();\n" .
+            "}\n\n" .
+            "function handleError(msg) {\n" .
+            "    toast.error(msg);\n" .
             "}\n\n" .
             "const loadData = async () => {\n" .
             "    try {\n" .
-            "        const response = await axios.get(`/{$componentName}/\${props.data.id}`);\n" .
-            "        Object.keys(form.data()).forEach(key => {\n" .
+            "        const response = await axios.get(`/admin/{$componentName}/\${props.data.id}`);\n" .
+            "        Object.keys(form.value).forEach(key => {\n" .
             "            if (response.data[key] !== undefined) {\n" .
-            "                form[key] = response.data[key];\n" .
+            "                form.value[key] = response.data[key];\n" .
             "            }\n" .
             "        });\n" .
             "        readOnly.value = Boolean(props.data.readOnly);\n" .
@@ -491,6 +514,7 @@ class GenerateModule extends Command
             "}\n\n" .
             "onMounted(async () => {\n" .
             "    if (props.data?.id) {\n" .
+            "        acao.value = `/admin/{$componentName}/\${props.data.id}`;\n" .
             "        await loadData();\n" .
             "    } else {\n" .
             "        ready.value = true;\n" .
@@ -502,15 +526,15 @@ class GenerateModule extends Command
     private function addRoute(string $moduleName, string $tableName): void
     {
         $componentName = str_replace('_', '-', $tableName);
-        $importStatement = "use App\\Http\\Controllers\\" . ucfirst($moduleName) . "Controller;";
+        $importStatement = "use App\\Http\\Controllers\\Admin\\" . ucfirst($moduleName) . "Controller;";
         $routeContent =
-            "Route::group(['prefix' => '" . strtolower($componentName) . "'], function () {\n" .
-            "    Route::get('/', [" . ucfirst($moduleName) . "Controller::class, 'index'])->name('" . strtolower($tableName) . ".index');\n" .
-            "    Route::get('/list', [" . ucfirst($moduleName) . "Controller::class, 'list'])->name('" . strtolower($tableName) . ".list');\n" .
-            "    Route::get('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'edit'])->name('" . strtolower($tableName) . ".edit');\n" .
-            "    Route::post('/', [" . ucfirst($moduleName) . "Controller::class, 'create'])->name('" . strtolower($tableName) . ".create');\n" .
-            "    Route::post('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'update'])->name('" . strtolower($tableName) . ".update');\n" .
-            "    Route::delete('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'delete'])->name('" . strtolower($tableName) . ".delete');\n" .
+            "Route::group(['prefix' => 'admin/{$componentName}'], function () {\n" .
+            "    Route::get('/', [" . ucfirst($moduleName) . "Controller::class, 'index'])->name('admin.{$tableName}.index');\n" .
+            "    Route::get('/list', [" . ucfirst($moduleName) . "Controller::class, 'list'])->name('admin.{$tableName}.list');\n" .
+            "    Route::get('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'edit'])->name('admin.{$tableName}.edit');\n" .
+            "    Route::post('/', [" . ucfirst($moduleName) . "Controller::class, 'create'])->name('admin.{$tableName}.create');\n" .
+            "    Route::post('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'update'])->name('admin.{$tableName}.update');\n" .
+            "    Route::delete('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'delete'])->name('admin.{$tableName}.delete');\n" .
             "});";
 
         $webRoutePath = app()->basePath('routes/web.php');
