@@ -227,7 +227,7 @@ class GenerateModule extends Command
             "    }\n\n" .
             "    public function index(): Response\n" .
             "    {\n" .
-            "        return Inertia::render('Admin/{$className}/{$className}Index');\n" .
+            "        return Inertia::render('admin/{$className}/{$className}Index');\n" .
             "    }\n\n" .
             "    public function list(Request \$request): JsonResponse\n" .
             "    {\n" .
