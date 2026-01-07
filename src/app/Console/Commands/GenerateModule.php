@@ -46,8 +46,8 @@ class GenerateModule extends Command
             "app/Databases/Repositories/{$moduleNameCaps}Repository.php" => $this->getRepositoryContent($moduleName, $formColumns),
             "app/Http/Controllers/Admin/{$moduleNameCaps}Controller.php" => $this->getControllerContent($moduleName, $formColumns, $tableName),
             "app/Http/Requests/{$moduleNameCaps}Request.php" => $this->getRequestContent($moduleName),
-            "resources/js/Pages/Admin/{$moduleNameCaps}/{$moduleNameCaps}Index.vue" => $this->getIndexPageContent($moduleName, $gridColumns, $tableName),
-            "resources/js/Pages/Admin/{$moduleNameCaps}/{$moduleNameCaps}Form.vue" => $this->getFormContent($moduleName, $formColumns, $tableName),
+            "resources/js/pages/admin/{$moduleNameCaps}/{$moduleNameCaps}Index.vue" => $this->getIndexPageContent($moduleName, $gridColumns, $tableName),
+            "resources/js/pages/admin/{$moduleNameCaps}/{$moduleNameCaps}Form.vue" => $this->getFormContent($moduleName, $formColumns, $tableName),
         ];
 
         foreach ($paths as $path => $content) {
