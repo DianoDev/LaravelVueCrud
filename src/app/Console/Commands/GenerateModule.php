@@ -15,6 +15,9 @@ class GenerateModule extends Command
         $moduleName = $this->argument('name');
         $moduleNameCaps = ucfirst($moduleName);
 
+        $folderName = $this->ask("Qual é o nome da pasta (ex: admin, painel, site)?", "admin");
+        $folderNameCaps = ucfirst($folderName);
+
         $tableName = $this->ask("Qual é o nome da tabela no banco de dados?");
 
         $columns = DB::getSchemaBuilder()->getColumnListing($tableName);
@@ -44,17 +47,17 @@ class GenerateModule extends Command
             "app/Databases/Contracts/{$moduleNameCaps}Contract.php" => $this->getContractContent($moduleName),
             "app/Databases/Models/{$moduleNameCaps}.php" => $this->getModelContent($moduleName, $tableName),
             "app/Databases/Repositories/{$moduleNameCaps}Repository.php" => $this->getRepositoryContent($moduleName, $formColumns),
-            "app/Http/Controllers/Admin/{$moduleNameCaps}Controller.php" => $this->getControllerContent($moduleName, $formColumns, $tableName),
+            "app/Http/Controllers/{$folderNameCaps}/{$moduleNameCaps}Controller.php" => $this->getControllerContent($moduleName, $formColumns, $tableName, $folderNameCaps),
             "app/Http/Requests/{$moduleNameCaps}Request.php" => $this->getRequestContent($moduleName),
-            "resources/js/pages/admin/{$moduleNameCaps}/{$moduleNameCaps}Index.vue" => $this->getIndexPageContent($moduleName, $gridColumns, $tableName),
-            "resources/js/pages/admin/{$moduleNameCaps}/{$moduleNameCaps}Form.vue" => $this->getFormContent($moduleName, $formColumns, $tableName),
+            "resources/js/pages/{$folderName}/{$moduleNameCaps}/{$moduleNameCaps}Index.vue" => $this->getIndexPageContent($moduleName, $gridColumns, $tableName, $folderName),
+            "resources/js/pages/{$folderName}/{$moduleNameCaps}/{$moduleNameCaps}Form.vue" => $this->getFormContent($moduleName, $formColumns, $tableName, $folderName),
         ];
 
         foreach ($paths as $path => $content) {
             $this->createFile($path, $content);
         }
 
-        $this->addRoute($moduleName, $tableName);
+        $this->addRoute($moduleName, $tableName, $folderName, $folderNameCaps);
         $this->addBindings($moduleName);
 
         $this->info("Módulo '{$moduleName}' criado com sucesso no padrão Inertia.js!");
@@ -101,11 +104,9 @@ class GenerateModule extends Command
 
         return "<?php\n\n" .
             "namespace App\\Databases\\Models;\n\n" .
-            "use Illuminate\\Database\\Eloquent\\Model;\n" .
-            "use Illuminate\\Database\\Eloquent\\SoftDeletes;\n\n" .
+            "use Illuminate\\Database\\Eloquent\\Model;\n\n" .
             "class {$className} extends Model\n" .
             "{\n" .
-            "    use SoftDeletes;\n\n" .
             "    protected \$primaryKey = \"id\";\n" .
             "    protected \$table = '{$tableName}';\n" .
             "    public string \$sequence = '{$sequenceName}';\n" .
@@ -203,16 +204,17 @@ class GenerateModule extends Command
             "}\n";
     }
 
-    private function getControllerContent(string $modulo, $formContent, $tableName): string
+    private function getControllerContent(string $modulo, $formContent, $tableName, string $folderNameCaps): string
     {
         $className = ucfirst($modulo);
         $variableName = lcfirst($modulo);
+        $folderNameLower = lcfirst($folderNameCaps);
         $filterOptions = implode(",\n", array_map(function ($field) {
             return "            '{$field}' => [\n                'type' => 'text',\n            ]";
         }, $formContent));
 
         return "<?php\n" .
-            "namespace App\\Http\\Controllers\\Admin;\n\n" .
+            "namespace App\\Http\\Controllers\\{$folderNameCaps};\n\n" .
             "use App\\Http\\Controllers\\Controller;\n" .
             "use Illuminate\\Http\\Request;\n" .
             "use Illuminate\\Http\\JsonResponse;\n" .
@@ -227,7 +229,7 @@ class GenerateModule extends Command
             "    }\n\n" .
             "    public function index(): Response\n" .
             "    {\n" .
-            "        return Inertia::render('admin/{$className}/{$className}Index');\n" .
+            "        return Inertia::render('{$folderNameLower}/{$className}/{$className}Index');\n" .
             "    }\n\n" .
             "    public function list(Request \$request): JsonResponse\n" .
             "    {\n" .
@@ -289,7 +291,7 @@ class GenerateModule extends Command
             "}\n";
     }
 
-    private function getIndexPageContent(string $moduleName, $gridColumns, $tableName): string
+    private function getIndexPageContent(string $moduleName, $gridColumns, $tableName, string $folderName): string
     {
         $output = preg_replace('/([A-Z])/', ' $1', $moduleName);
         $className = ucfirst($moduleName);
@@ -337,7 +339,7 @@ class GenerateModule extends Command
             "import { useToast } from 'vue-toastification';\n\n" .
             "const toast = useToast();\n" .
             "const events = inject('events');\n" .
-            "const source = ref('/admin/{$componentName}/list');\n\n" .
+            "const source = ref('/{$folderName}/{$componentName}/list');\n\n" .
             "const columns = ref([\n" .
             $gridFields .
             "    {\n" .
@@ -362,7 +364,7 @@ class GenerateModule extends Command
             "                type: 'delete',\n" .
             "                icon: 'fa-trash',\n" .
             "                text: 'Remover',\n" .
-            "                deleteUrl: `/admin/{$componentName}/\${row.id}`,\n" .
+            "                deleteUrl: `/{$folderName}/{$componentName}/\${row.id}`,\n" .
             "                dataTitle: 'Confirmação de Remoção',\n" .
             "                dataMessage: 'Você deseja realmente excluir este registro?'\n" .
             "            }\n" .
@@ -372,7 +374,7 @@ class GenerateModule extends Command
             "</script>\n";
     }
 
-    private function getFormContent($moduleName, $formColumns, $tableName): string
+    private function getFormContent($moduleName, $formColumns, $tableName, string $folderName): string
     {
         $output = preg_replace('/([A-Z])/', ' $1', $moduleName);
         $className = ucfirst($moduleName);
@@ -447,7 +449,7 @@ class GenerateModule extends Command
             "    }\n" .
             "});\n\n" .
             "const emit = defineEmits(['close']);\n" .
-            "const acao = ref('/admin/{$componentName}/');\n" .
+            "const acao = ref('/{$folderName}/{$componentName}/');\n" .
             "const events = inject('events');\n" .
             "const toast = useToast();\n" .
             "const errors = ref({});\n" .
@@ -495,7 +497,7 @@ class GenerateModule extends Command
             "}\n\n" .
             "const loadData = async () => {\n" .
             "    try {\n" .
-            "        const response = await axios.get(`/admin/{$componentName}/\${props.data.id}`);\n" .
+            "        const response = await axios.get(`/{$folderName}/{$componentName}/\${props.data.id}`);\n" .
             "        Object.keys(form.value).forEach(key => {\n" .
             "            if (response.data[key] !== undefined) {\n" .
             "                form.value[key] = response.data[key];\n" .
@@ -514,7 +516,7 @@ class GenerateModule extends Command
             "}\n\n" .
             "onMounted(async () => {\n" .
             "    if (props.data?.id) {\n" .
-            "        acao.value = `/admin/{$componentName}/\${props.data.id}`;\n" .
+            "        acao.value = `/{$folderName}/{$componentName}/\${props.data.id}`;\n" .
             "        await loadData();\n" .
             "    } else {\n" .
             "        ready.value = true;\n" .
@@ -523,18 +525,18 @@ class GenerateModule extends Command
             "</script>\n";
     }
 
-    private function addRoute(string $moduleName, string $tableName): void
+    private function addRoute(string $moduleName, string $tableName, string $folderName, string $folderNameCaps): void
     {
         $componentName = str_replace('_', '-', $tableName);
-        $importStatement = "use App\\Http\\Controllers\\Admin\\" . ucfirst($moduleName) . "Controller;";
+        $importStatement = "use App\\Http\\Controllers\\{$folderNameCaps}\\" . ucfirst($moduleName) . "Controller;";
         $routeContent =
-            "Route::group(['prefix' => 'admin/{$componentName}'], function () {\n" .
-            "    Route::get('/', [" . ucfirst($moduleName) . "Controller::class, 'index'])->name('admin.{$tableName}.index');\n" .
-            "    Route::get('/list', [" . ucfirst($moduleName) . "Controller::class, 'list'])->name('admin.{$tableName}.list');\n" .
-            "    Route::get('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'edit'])->name('admin.{$tableName}.edit');\n" .
-            "    Route::post('/', [" . ucfirst($moduleName) . "Controller::class, 'create'])->name('admin.{$tableName}.create');\n" .
-            "    Route::post('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'update'])->name('admin.{$tableName}.update');\n" .
-            "    Route::delete('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'delete'])->name('admin.{$tableName}.delete');\n" .
+            "Route::group(['prefix' => '{$folderName}/{$componentName}'], function () {\n" .
+            "    Route::get('/', [" . ucfirst($moduleName) . "Controller::class, 'index'])->name('{$folderName}.{$tableName}.index');\n" .
+            "    Route::get('/list', [" . ucfirst($moduleName) . "Controller::class, 'list'])->name('{$folderName}.{$tableName}.list');\n" .
+            "    Route::get('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'edit'])->name('{$folderName}.{$tableName}.edit');\n" .
+            "    Route::post('/', [" . ucfirst($moduleName) . "Controller::class, 'create'])->name('{$folderName}.{$tableName}.create');\n" .
+            "    Route::post('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'update'])->name('{$folderName}.{$tableName}.update');\n" .
+            "    Route::delete('/{id}', [" . ucfirst($moduleName) . "Controller::class, 'delete'])->name('{$folderName}.{$tableName}.delete');\n" .
             "});";
 
         $webRoutePath = app()->basePath('routes/web.php');
